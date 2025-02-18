@@ -1,3 +1,9 @@
+#!/bin/bash
+
+# Source the Conda initialization script
+# Adjust the path to your actual Conda installation
+source ~/miniconda3/etc/profile.d/conda.sh
+
 # Read Arguments
 TEMP=`getopt -o h --long help,new-env,basic,xformers,flash-attn,diffoctreerast,vox2seq,spconv,mipgaussian,kaolin,nvdiffrast,demo -n 'setup.sh' -- "$@"`
 
@@ -160,7 +166,7 @@ fi
 
 if [ "$FLASHATTN" = true ] ; then
     if [ "$PLATFORM" = "cuda" ] ; then
-        pip install flash-attn
+        pip install flash-attn==2.7.3
     elif [ "$PLATFORM" = "hip" ] ; then
         echo "[FLASHATTN] Prebuilt binaries not found. Building from source..."
         mkdir -p /tmp/extensions

@@ -1,5 +1,6 @@
 from . import samplers
 from .trellis_image_to_3d import TrellisImageTo3DPipeline
+from .trellis_image_to_sparse_3d import TrellisImageToSparse3DPipeline
 
 
 def from_pretrained(path: str):

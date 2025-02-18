@@ -15,7 +15,7 @@ from ..modules import sparse as sp
 from ..representations import Gaussian, Strivec, MeshExtractResult
 from loguru import logger
 
-class TrellisImageTo3DPipeline(Pipeline):
+class TrellisImageToSparse3DPipeline(Pipeline):
     """
     Pipeline for inferring Trellis image-to-3D models.
 
@@ -43,18 +43,18 @@ class TrellisImageTo3DPipeline(Pipeline):
         self.slat_sampler_params = {}
         self.slat_normalization = slat_normalization
         self.rembg_session = None
-        self._init_image_cond_model(image_cond_model)
+        # self._init_image_cond_model(image_cond_model)
 
     @staticmethod
-    def from_pretrained(path: str) -> "TrellisImageTo3DPipeline":
+    def from_pretrained(path: str) -> "TrellisImageToSparse3DPipeline":
         """
         Load a pretrained model.
 
         Args:
             path (str): The path to the model. Can be either local path or a Hugging Face repository.
         """
-        pipeline = super(TrellisImageTo3DPipeline, TrellisImageTo3DPipeline).from_pretrained(path)
-        new_pipeline = TrellisImageTo3DPipeline()
+        pipeline = super(TrellisImageToSparse3DPipeline, TrellisImageToSparse3DPipeline).from_pretrained(path)
+        new_pipeline = TrellisImageToSparse3DPipeline()
         new_pipeline.__dict__ = pipeline.__dict__
         args = pipeline._pretrained_args
 
@@ -191,9 +191,10 @@ class TrellisImageTo3DPipeline(Pipeline):
         
         # Decode occupancy latent
         decoder = self.models['sparse_structure_decoder']
-        coords = torch.argwhere(decoder(z_s)>0)[:, [0, 2, 3, 4]].int()
+        decoded_op = decoder(z_s)
+        coords = torch.argwhere(decoded_op>0)[:, [0, 2, 3, 4]].int()
 
-        return coords
+        return coords, decoded_op
 
     def decode_slat(
         self,
@@ -368,9 +369,10 @@ class TrellisImageTo3DPipeline(Pipeline):
         cond['neg_cond'] = cond['neg_cond'][:1]
         torch.manual_seed(seed)
         ss_steps = {**self.sparse_structure_sampler_params, **sparse_structure_sampler_params}.get('steps')
+        breakpoint()
         with self.inject_sampler_multi_image('sparse_structure_sampler', len(images), ss_steps, mode=mode):
-            coords = self.sample_sparse_structure(cond, num_samples, sparse_structure_sampler_params)
-        slat_steps = {**self.slat_sampler_params, **slat_sampler_params}.get('steps')
-        with self.inject_sampler_multi_image('slat_sampler', len(images), slat_steps, mode=mode):
-            slat = self.sample_slat(cond, coords, slat_sampler_params)
-        return self.decode_slat(slat, formats)
+            return self.sample_sparse_structure(cond, num_samples, sparse_structure_sampler_params)
+        # slat_steps = {**self.slat_sampler_params, **slat_sampler_params}.get('steps')
+        # with self.inject_sampler_multi_image('slat_sampler', len(images), slat_steps, mode=mode):
+        #     slat = self.sample_slat(cond, coords, slat_sampler_params)
+        # return coords, self.decode_slat(slat, formats)
