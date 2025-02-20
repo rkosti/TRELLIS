@@ -38,7 +38,7 @@ sampling_steps = 12
 
 # Run the pipeline
 t1 = time.time()
-outputs = pipeline.run_multi_image(
+outputs = pipeline.run(
     sample_images,
     seed=1,
     # Optional parameters
@@ -46,17 +46,13 @@ outputs = pipeline.run_multi_image(
         "steps": sampling_steps,
         "cfg_strength": 7.5,
     },
-    slat_sampler_params={
-        "steps": sampling_steps,
-        "cfg_strength": 3,
-    },
     formats='gaussian'
 )
 t2 = time.time()
 logger.info(f"Pipeline took: {t2 - t1} sec.")
 logger.info(f" Coords: {outputs[0].shape} \n Occupancy list: {outputs[1].shape} ")
 # logger.info(f"conditioning features: {outputs[2].shape}")
-# breakpoint()
+breakpoint()
 
 # # saving the generated gaussian 3D model as ply file
 # outputs['gaussian'][0].save_ply(f'reconstructed_examples/{images[0].stem}_steps_{sampling_steps}.ply')

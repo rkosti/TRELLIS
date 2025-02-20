@@ -329,6 +329,9 @@ paket-files/
 __pycache__/
 *.pyc
 
+# exclude local notebooks 
+*.ipynb
+
 # Cake - Uncomment if you are using it
 # tools/**
 # !tools/packages.config
